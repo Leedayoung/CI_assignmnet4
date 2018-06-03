@@ -9,6 +9,7 @@ import matplotlib.cm as cm
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 import scipy.stats as stats
+import functools
 
 from scipy.stats import multivariate_normal
 
@@ -17,9 +18,9 @@ from scipy.stats import multivariate_normal
 def main():
     
     # choose the scenario
-    # scenario = 1    # all anchors are Gaussian
-    scenario = 2    # 1 anchor is exponential, 3 are Gaussian
-    # scenario = 3    # all anchors are exponential
+    #scenario = 1    # all anchors are Gaussian
+    #scenario = 2    # 1 anchor is exponential, 3 are Gaussian
+    scenario = 3    # all anchors are exponential
     
     # specify position of anchors
     p_anchor = np.array([[5,5],[-5,5],[-5,-5],[5,-5]])
@@ -49,6 +50,22 @@ def main():
     if(scenario == 3):
         # TODO: don't forget to plot joint-likelihood function for the first measurement
 
+        x = np.arange(-5, 5, .05)
+        y = np.arange(-5, 5, .05)
+        xx, yy = np.meshgrid(x, y)
+        distances = [np.sqrt((anchor[0] - xx)**2 + (anchor[1] - yy)**2) for anchor in p_anchor]
+
+        likelihoods = [np.where(data[0][i] > distances[i], params[0][i] * np.exp(-params[0][i] * (data[0][i] - distances[i])), 0) for i in range(nr_anchors)]
+        #for mesh in likelihoods:
+        #    plt.contour(x, y, mesh)
+        #    plt.show()
+
+        joint_likelihood = functools.reduce(np.multiply, likelihoods)
+        plt.contour(x, y, joint_likelihood)
+        plt.show()
+
+        #likeleyhoods = [params[0][i] * np.exp(-params[0][i] * (data[0][i] - ))]
+
         #3) Postion estimation using numerical maximum likelihood
         #TODO
         # position_estimation_numerical_ml(data,nr_anchors,p_anchor, params, p_true)
@@ -61,6 +78,7 @@ def main():
         position_estimation_bayes(data,nr_anchors,p_anchor,prior_mean,prior_cov, params, p_true)
 
     pass
+
 
 #--------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------
@@ -156,8 +174,8 @@ def position_estimation_numerical_ml(data,nr_anchors,p_anchor, lambdas, p_true):
         p_anchor... position of anchors, nr_anchors x 2 
         lambdas... estimated parameters (scenario 3), nr_anchors x 1
         p_true... true position (needed to calculate error), 2x2 """
-    #TODO
     pass
+
 #--------------------------------------------------------------------------------
 def position_estimation_bayes(data,nr_anchors,p_anchor,prior_mean,prior_cov,lambdas, p_true):
     """ estimate the position by accounting for prior knowledge that is specified by a bivariate Gaussian
