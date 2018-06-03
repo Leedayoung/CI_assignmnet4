@@ -18,9 +18,9 @@ from scipy.stats import multivariate_normal
 def main():
     
     # choose the scenario
-    #scenario = 1    # all anchors are Gaussian
-    #scenario = 2    # 1 anchor is exponential, 3 are Gaussian
-    scenario = 3    # all anchors are exponential
+    # scenario = 1    # all anchors are Gaussian
+    scenario = 2    # 1 anchor is exponential, 3 are Gaussian
+    # scenario = 3    # all anchors are exponential
     
     # specify position of anchors
     p_anchor = np.array([[5,5],[-5,5],[-5,-5],[5,-5]])
@@ -42,10 +42,10 @@ def main():
     nr_samples = np.size(data,0)
     
     #1) ML estimation of model parameters 
-    params = parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref)
+    # params = parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref)
     
     #2) Position estimation using least squares
-    position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, True)
+    position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, False)
 
     if(scenario == 3):
         # TODO: don't forget to plot joint-likelihood function for the first measurement
@@ -126,15 +126,22 @@ def position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, use_expo
     
     # estimate position 
     p_expected = np.zeros([nr_samples,2])
+    
 
     #iterate through sample
     for i in range(0, nr_samples):
         #uniform distribution within 4 achors
-        del_anchor = np.random.randint(0,3)
-        sel_anchors = np.delete(p_anchor,del_anchor,0)
-        ran_p = np.sort(np.random.rand(2, 1), axis=0)
-        p_start = np.transpose(np.column_stack([ran_p[0], ran_p[1]-ran_p[0], 1.0-ran_p[1]]) @ sel_anchors)
-        p_expected[i,:] = least_squares_GN(p_anchor,p_start, data[i], max_iter, tol)
+        if use_exponential == True:
+            del_anchor = np.random.randint(0,3)
+            sel_anchors = np.delete(p_anchor,del_anchor,0)
+            ran_p = np.sort(np.random.rand(2, 1), axis=0)
+            p_start = np.transpose(np.column_stack([ran_p[0], ran_p[1]-ran_p[0], 1.0-ran_p[1]]) @ sel_anchors)
+            p_expected[i,:] = least_squares_GN(p_anchor,p_start, data[i], max_iter, tol)
+        else:
+            sel_anchors = p_anchor[1:4,:]
+            ran_p = np.sort(np.random.rand(2, 1), axis=0)
+            p_start = np.transpose(np.column_stack([ran_p[0], ran_p[1]-ran_p[0], 1.0-ran_p[1]]) @ sel_anchors)
+            p_expected[i,:] = least_squares_GN(sel_anchors,p_start, data[i,1:4], max_iter, tol)
 
 	# calculate error measures and create plots----------------
     p_error = (-1)*p_expected + p_true
@@ -198,27 +205,13 @@ def least_squares_GN(p_anchor,p_start, r, max_iter, tol):
         r... distance_estimate, nr_anchors x 1
         max_iter... maximum number of iterations, scalar
         tol... tolerance value to terminate, scalar"""
-    J = np.zeros([4,2])
-    b = np.zeros([4,1])
-
-    # for _ in range(0,max_iter):
-    #     for k in range(0,3):
-    #         p_start_p_anchor = dist.euclidean(p_start,p_anchor[k+1])
-    #         b[k] = r[k+1]-p_start_p_anchor
-    #         J[k][0] = -(p_start[0] - p_anchor[k+1][0])/p_start_p_anchor
-    #         J[k][1] = -(p_start[1] - p_anchor[k+1][1])/p_start_p_anchor
-    #     solution = np.linalg.lstsq(J, b)[0]
-    #     p_next = p_start - solution
-    #     if dist.euclidean(p_next,p_start) < tol :
-    #         break
-    #     else :
-    #         p_start = p_next
-    # return np.ndarray.flatten(p_start)
-    # J = np.zeros([4,2])
-    # b = np.zeros([4,1])
-
+    
+    a_size = int(np.size(p_anchor)/2)
+    J = np.zeros([a_size,2])
+    b = np.zeros([a_size,1])
+    
     for _ in range(0,max_iter):
-        for k in range(0,4):
+        for k in range(0,a_size):
             p_start_p_anchor = dist.euclidean(p_start,p_anchor[k])
             b[k] = r[k]-p_start_p_anchor
             J[k][0] = -(p_start[0] - p_anchor[k][0])/p_start_p_anchor
