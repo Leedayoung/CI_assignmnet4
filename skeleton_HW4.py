@@ -2,6 +2,8 @@
 #Author: Christian Knoll, Florian Kaum
 #Edited: May, 2018
 
+import math
+import scipy.spatial.distance as dist
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
@@ -29,7 +31,7 @@ def main():
     p_true = np.array([[2,-4]])
 #    p_true = np.array([[2,-4])
                        
-    plot_anchors_and_agent(nr_anchors, p_anchor, p_true, p_ref)
+    # plot_anchors_and_agent(nr_anchors, p_anchor, p_true, p_ref)
     
     # load measured data and reference measurements for the chosen scenario
     data,reference_measurement = load_data(scenario)
@@ -38,12 +40,10 @@ def main():
     assert(np.size(data,0) == np.size(reference_measurement,0))
     nr_samples = np.size(data,0)
     
-    #1) ML estimation of model parameters
-    #TODO 
+    #1) ML estimation of model parameters 
     params = parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref)
     
     #2) Position estimation using least squares
-    #TODO
     position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, True)
 
     if(scenario == 3):
@@ -96,14 +96,48 @@ def position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, use_expo
         p_true... true position (needed to calculate error) 2x2 
         use_exponential... determines if the exponential anchor in scenario 2 is used, bool"""
     nr_samples = np.size(data,0)
+    tol = 0.000005  # tolerance
+    max_iter = 10  # maximum iterations for GN
     
-    #TODO set parameters
-    #tol = ...  # tolerance
-    #max_iter = ...  # maximum iterations for GN
+    # estimate position 
+    p_expected = np.zeros([nr_samples,2])
+
+    #iterate through sample
+    for i in range(0, nr_samples):
+        #uniform distribution within 4 achors
+        del_anchor = np.random.randint(0,3)
+        sel_anchors = np.delete(p_anchor,del_anchor,0)
+        ran_p = np.sort(np.random.rand(2, 1), axis=0)
+        p_start = np.transpose(np.column_stack([ran_p[0], ran_p[1]-ran_p[0], 1.0-ran_p[1]]) @ sel_anchors)
+        p_expected[i,:] = least_squares_GN(p_anchor,p_start, data[i], max_iter, tol)
+
+	# calculate error measures and create plots----------------
+    p_error = (-1)*p_expected + p_true
+    p_error = p_error * p_error
+    p_error = np.sqrt(p_error[:,0]+p_error[:,1])
+    per_mean = np.mean(p_error, axis =0)
+    per_variance = np.var(p_error, axis =0)
+
+    print("-----point error-------")
+    print(per_mean)
+    print(per_variance)
+
+    p_mean = np.mean(p_expected, axis = 0)
+    p_cov = np.cov(p_expected[:,0],p_expected[:,1])
+    pT_expected = np.transpose(p_expected)
+
+    plt.plot(pT_expected[0], pT_expected[1], 'ro')
+    plt.show()
+
+    plot_gauss_contour(p_mean,p_cov,1,3,-5,-3,"Scatter plots of the estimated positions")
     
-    # TODO estimate position for  i in range(0, nr_samples)
-    # least_squares_GN(p_anchor,p_start, r, max_iter, tol)
-	# TODO calculate error measures and create plots----------------
+    # Fx,x = ecdf(p_error) 
+    # plt.plot(x,Fx)
+    # plt.title('cumulative distribution function (CDF) of the position estimation error')
+    # plt.ylabel('F(x)')
+    # plt.xlabel('x')
+    # plt.show()
+
     pass
 #--------------------------------------------------------------------------------
 def position_estimation_numerical_ml(data,nr_anchors,p_anchor, lambdas, p_true):
@@ -138,7 +172,22 @@ def least_squares_GN(p_anchor,p_start, r, max_iter, tol):
         r... distance_estimate, nr_anchors x 1
         max_iter... maximum number of iterations, scalar
         tol... tolerance value to terminate, scalar"""
-    pass
+    J = np.zeros([4,2])
+    b = np.zeros([4,1])
+
+    for _ in range(0,max_iter):
+        for k in range(0,4):
+            p_start_p_anchor = dist.euclidean(p_start,p_anchor[k])
+            b[k] = r[k]-p_start_p_anchor
+            J[k][0] = -(p_start[0] - p_anchor[k][0])/p_start_p_anchor
+            J[k][1] = -(p_start[1] - p_anchor[k][1])/p_start_p_anchor
+        solution = np.linalg.lstsq(J, b)[0]
+        p_next = p_start - solution
+        if dist.euclidean(p_next,p_start) < tol :
+            break
+        else :
+            p_start = p_next
+    return np.ndarray.flatten(p_start)
     
 #--------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------
