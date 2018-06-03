@@ -36,6 +36,43 @@ If KS statistic is close to 0, it means that the dataset is similar with the par
 
 \subsection{Analytically derive the maximum likelihood solution for the exponential distribution}
 
+\newcommand{\prip}{p(r_i|p)}
+\newcommand{\ridi}{r_i-d_i(p)}
+\newcommand{\signa}{\sum\limits_{i=1}^{N_A}}
+\newcommand{\mulna}{\prod\limits_{i = 1}^{N_A}}
+
+To find the parameter $\lambda$ which maximizes the likelihood, we should differentiate the maximum likelihood function and set the Differential equation as 0. Then, we can find thethe parameter $\lambda$ in terms of position data($\ridi$).\\
+\noindent
+First, the maximum likelihood function is like this.\\
+\begin{equation}
+\hat{p}_{ML} = \arg\max\limits_{p}p(r|p) = \arg\max\limits_{p}\mulna\prip\\
+\end{equation}
+
+\noindent
+To find the maximum likelihood, we should differentitiate the maximum likelihood.\\
+\begin{equation}
+\mulna\prip =\mulna\lambda\exp^{-\lambda(\ridi)} = (\lambda)^{NA}\exp^{-\lambda\signa(\ridi)}
+\end{equation}
+
+\noindent
+To make the calculation easy, take the natural log on both side.
+\begin{equation}
+\ln\mulna\prip = N_A \ln\lambda - \lambda\signa(\ridi)
+\end{equation}
+
+\noindent
+To find the $\lambda$, which maximizes the likelihood function, we should differntiate the function in terms of $\lambda$ and set the equation as a. 
+\begin{equation}
+\frac{\partial(\ln\mulna\prip)}{\partial \lambda} = \frac{N_A}{\lambda} - \signa(\ridi) =0
+\end{equation}
+
+\noindent
+Finally, we get the parameter $\lambda$.
+\begin{equation}
+\lambda = \frac{N_A}{\signa(\ridi)} = \frac{1}{\overline{\ridi}} = \frac{1}{\mu}
+\end{equation}
+\clearpage
+
 \subsection{Estimate the parameters of the measurement models}
 \subsubsection{Scenario 1: Measurements of all anchors follow the Gaussian model.}
 \begin{figure}[h]
@@ -44,7 +81,6 @@ If KS statistic is close to 0, it means that the dataset is similar with the par
 		\caption{Parameters for each anchor}
 	\end{center}
 \end{figure}
-\clearpage
 \subsubsection{Scenario 2: Measurements of one anchor follow the Exponential model, the other ones follow the Gaussian model.}
 \begin{figure}[h]
 	\begin{center}
@@ -73,8 +109,7 @@ Then, we iterate with new start point(selected within the anchors square with un
 		\includegraphics[width=0.5\textwidth]{gauss_newton.jpg}
 		\caption{Main loop for iterating measurements}
 	\end{center}
-\end{figure}
-\clearpage
+\end{figure}\\
 The following figure is the main code of Gauss\_Newton.\\
 \begin{figure}[h]
 	\begin{center}
