@@ -63,6 +63,111 @@ If KS statistic is close to 0, it means that the dataset is similar with the par
 
 \section{Estimation of the Position}
 \subsection{Least-Squares Estimation of the Position}
-\subsection{Numerical Maximum-Likelihood Estimation of the Position}
+\subsubsection{Show analytically that the least-squares estimator of the position is equivalent to the maximum likelihood estimator}
+\subsubsection{Implement the Gauss-Newton algorithm}
 
+First, we just set the tolerance as 0.000005 and the max\_iteration as 10.\\
+Then, we iterate with new start point(selected within the anchors square with uniform distribution) through the measurements.
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{gauss_newton.jpg}
+		\caption{Main loop for iterating measurements}
+	\end{center}
+\end{figure}
+\clearpage
+The following figure is the main code of Gauss\_Newton.\\
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{least_square.jpg}
+		\caption{Least\_square with Gauss\_Newton}
+	\end{center}
+\end{figure}
+
+J is jacobian matrix and b is $(r-d(\hat{p}\textsuperscript{(t)}))$.
+Using 'np.linalg.lstsq', which is the least square solver, we get the solution. Then, we update the position of agent and check tolerence and max iteration.
+
+\clearpage
+\subsubsection{Evaluate your estimation algorithm : Scenario 1}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{mean_variance_error1.jpg}
+		\caption{The mean and variance of the position estimation error}
+	\end{center}
+\end{figure}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{plotcon1.png}
+		\caption{Scatter plots of the estimated positions with contourlines}
+	\end{center}
+\end{figure}
+The estimated positions looks like following Gaussian distribution.
+\begin{figure}[h]
+	\begin{center}		
+		\includegraphics[width=0.5\textwidth]{CDF1.png}
+		\caption{cumulative distribution function (CDF) of the position estimation error}
+	\end{center}
+\end{figure}
+
+The probability that the position estimation error is smaller than 0.4, is 0.8.
+
+\clearpage
+\subsubsection{Evaluate your estimation algorithm : Scenario 2}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{mean_variance_error2.jpg}
+		\caption{The mean and variance of the position estimation error}
+	\end{center}
+\end{figure}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{plotcon2.png}
+		\caption{Scatter plots of the estimated positions with contourlines}
+	\end{center}
+\end{figure}
+The estimated positions doesn't look like following Gaussian distribution.
+\begin{figure}[h]
+	\begin{center}		
+		\includegraphics[width=0.5\textwidth]{CDF2.png}
+		\caption{cumulative distribution function (CDF) of the position estimation error}
+	\end{center}
+\end{figure}
+
+The probability that the position estimation error is smaller than 0.4, is 0.35.
+
+
+
+
+\clearpage
+\subsubsection{Evaluate your estimation algorithm : Scenario 3}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{mean_variance_error3.jpg}
+		\caption{The mean and variance of the position estimation error}
+	\end{center}
+\end{figure}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{plotcon3.png}
+		\caption{Scatter plots of the estimated positions with contourlines}
+	\end{center}
+\end{figure}
+The estimated positions doens't look like following Gaussian distribution.
+\begin{figure}[h]
+	\begin{center}		
+		\includegraphics[width=0.5\textwidth]{CDF3.png}
+		\caption{cumulative distribution function (CDF) of the position estimation error}
+	\end{center}
+\end{figure}
+
+The probability that the position estimation error is smaller than 0.4, is 0.1.\\
+
+$\bullet$ \textbf{Comparision of the probability that the position estimation error is smaller than 0.4}\\
+
+\hspace{0.5cm} Scenario 1(0.8) $>$ Scenario 2(0.35) $>$ Scenario 3(0.1)\\
+
+\hspace{0.5cm} The probability of scenario 1 is the smallest. The reason is that measurements of 4 anchors follow the Gaussian model. The least square esimation works well on gaussian model so the performance of scenario 1 is the highest. In the case of scenario 2, there exists one exponential model so the performance is lower than scenario 1 because an exponential model doesn't work well on least square estimation. In the case of scenario 3, it consists of 4 exponential models so it ranks the lowest among 3 scenarios.
+
+
+\clearpage
+\subsection{Numerical Maximum-Likelihood Estimation of the Position}
 \end{document}
