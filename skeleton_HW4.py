@@ -72,8 +72,19 @@ def parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref):
         p_anchor... position of anchors, nr_anchors x 2
         p_ref... reference point, 2x2 """
     params = np.zeros([1, nr_anchors])
-    #TODO (1) check whether a given anchor is Gaussian or exponential
-    #TODO (2) estimate the according parameter based 
+    for i in range(0,nr_anchors):
+        #(1) check whether a given anchor is Gaussian or exponential
+        ref = reference_measurement[:,i]
+        true_distance = dist.euclidean(p_ref,p_anchor[i])
+        ref = ref - true_distance
+        D, _ = stats.kstest(ref, "expon")
+
+        #(2) estimate the according parameter based
+        if D < 0.1 : #exponential distribution
+            params[0][i] = 1/np.mean(np.mean(ref))
+        else: # gaussian distribution
+            params[0][i] = math.pow(np.var(ref),2)
+    
     return params
 #--------------------------------------------------------------------------------
 def position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, use_exponential):
