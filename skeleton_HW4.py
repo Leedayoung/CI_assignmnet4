@@ -42,7 +42,7 @@ def main():
     nr_samples = np.size(data,0)
     
     #1) ML estimation of model parameters 
-    # params = parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref)
+    params = parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref)
     
     #2) Position estimation using least squares
     position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, True)
@@ -198,31 +198,15 @@ def least_squares_GN(p_anchor,p_start, r, max_iter, tol):
         r... distance_estimate, nr_anchors x 1
         max_iter... maximum number of iterations, scalar
         tol... tolerance value to terminate, scalar"""
-    J = np.zeros([3,2])
-    b = np.zeros([3,1])
-
-    for _ in range(0,max_iter):
-        for k in range(0,3):
-            p_start_p_anchor = dist.euclidean(p_start,p_anchor[k+1])
-            b[k] = r[k+1]-p_start_p_anchor
-            J[k][0] = -(p_start[0] - p_anchor[k+1][0])/p_start_p_anchor
-            J[k][1] = -(p_start[1] - p_anchor[k+1][1])/p_start_p_anchor
-        solution = np.linalg.lstsq(J, b)[0]
-        p_next = p_start - solution
-        if dist.euclidean(p_next,p_start) < tol :
-            break
-        else :
-            p_start = p_next
-    return np.ndarray.flatten(p_start)
-    # J = np.zeros([4,2])
-    # b = np.zeros([4,1])
+    J = np.zeros([4,2])
+    b = np.zeros([4,1])
 
     # for _ in range(0,max_iter):
-    #     for k in range(0,4):
-    #         p_start_p_anchor = dist.euclidean(p_start,p_anchor[k])
-    #         b[k] = r[k]-p_start_p_anchor
-    #         J[k][0] = -(p_start[0] - p_anchor[k][0])/p_start_p_anchor
-    #         J[k][1] = -(p_start[1] - p_anchor[k][1])/p_start_p_anchor
+    #     for k in range(0,3):
+    #         p_start_p_anchor = dist.euclidean(p_start,p_anchor[k+1])
+    #         b[k] = r[k+1]-p_start_p_anchor
+    #         J[k][0] = -(p_start[0] - p_anchor[k+1][0])/p_start_p_anchor
+    #         J[k][1] = -(p_start[1] - p_anchor[k+1][1])/p_start_p_anchor
     #     solution = np.linalg.lstsq(J, b)[0]
     #     p_next = p_start - solution
     #     if dist.euclidean(p_next,p_start) < tol :
@@ -230,6 +214,22 @@ def least_squares_GN(p_anchor,p_start, r, max_iter, tol):
     #     else :
     #         p_start = p_next
     # return np.ndarray.flatten(p_start)
+    # J = np.zeros([4,2])
+    # b = np.zeros([4,1])
+
+    for _ in range(0,max_iter):
+        for k in range(0,4):
+            p_start_p_anchor = dist.euclidean(p_start,p_anchor[k])
+            b[k] = r[k]-p_start_p_anchor
+            J[k][0] = -(p_start[0] - p_anchor[k][0])/p_start_p_anchor
+            J[k][1] = -(p_start[1] - p_anchor[k][1])/p_start_p_anchor
+        solution = np.linalg.lstsq(J, b)[0]
+        p_next = p_start - solution
+        if dist.euclidean(p_next,p_start) < tol :
+            break
+        else :
+            p_start = p_next
+    return np.ndarray.flatten(p_start)
     
 #--------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------
