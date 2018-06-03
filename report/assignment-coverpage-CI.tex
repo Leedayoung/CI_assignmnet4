@@ -124,7 +124,7 @@ The probability that the position estimation error is smaller than 0.4, is 0.8.
 		\caption{Scatter plots of the estimated positions with contourlines}
 	\end{center}
 \end{figure}
-The estimated positions doesn't look like following Gaussian distribution.
+The estimated positions doesn't look like following Gaussian distribution because the graph is skewed to the direction bottom left.
 \begin{figure}[h]
 	\begin{center}		
 		\includegraphics[width=0.5\textwidth]{CDF2.png}
@@ -151,7 +151,7 @@ The probability that the position estimation error is smaller than 0.4, is 0.35.
 		\caption{Scatter plots of the estimated positions with contourlines}
 	\end{center}
 \end{figure}
-The estimated positions doens't look like following Gaussian distribution.
+The estimated positions doens't look like following Gaussian distribution becuase lots of esimated positions are scattered outside of contoured region.
 \begin{figure}[h]
 	\begin{center}		
 		\includegraphics[width=0.5\textwidth]{CDF3.png}
@@ -167,7 +167,36 @@ $\bullet$ \textbf{Comparision of the probability that the position estimation er
 
 \hspace{0.5cm} The probability of scenario 1 is the smallest. The reason is that measurements of 4 anchors follow the Gaussian model. The least square esimation works well on gaussian model so the performance of scenario 1 is the highest. In the case of scenario 2, there exists one exponential model so the performance is lower than scenario 1 because an exponential model doesn't work well on least square estimation. In the case of scenario 3, it consists of 4 exponential models so it ranks the lowest among 3 scenarios.
 
-
 \clearpage
+\subsubsection{Consider scenario 2.: Try neglecting the anchor with the exponentially distributed measurements at all}
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{mean_variance_neglect.jpg}
+		\caption{The mean and variance of the position estimation error}
+	\end{center}
+\end{figure}
+\noindent
+The mean value is decreased from 0.64 to 0.39.\\
+The varaiance value is decreased from 0.27 to 0.05.\\
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{neglect1.png}
+		\caption{Scatter plots of the estimated positions with contourlines}
+	\end{center}
+\end{figure}
+
+\noindent
+The estimated positions looks like following Gaussian distribution.
+\begin{figure}[h]
+	\begin{center}		
+		\includegraphics[width=0.5\textwidth]{neglect2.png}
+		\caption{cumulative distribution function (CDF) of the position estimation error}
+	\end{center}
+\end{figure}
+
+The probability that the position estimation error is increased from 0.35 to 0.7.\\
+After neglecting the anchor with exponential distribution, the mean, variance are decreased, the scatter plot looks like gaussian distribution and the probability, which the error is smaller than 0.4, is decrased. That is, the performance of the algorithm is improved.
+\clearpage
+
 \subsection{Numerical Maximum-Likelihood Estimation of the Position}
 \end{document}
