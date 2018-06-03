@@ -17,9 +17,9 @@ from scipy.stats import multivariate_normal
 def main():
     
     # choose the scenario
-    scenario = 1    # all anchors are Gaussian
-    #scenario = 2    # 1 anchor is exponential, 3 are Gaussian
-    #scenario = 3    # all anchors are exponential
+    # scenario = 1    # all anchors are Gaussian
+    scenario = 2    # 1 anchor is exponential, 3 are Gaussian
+    # scenario = 3    # all anchors are exponential
     
     # specify position of anchors
     p_anchor = np.array([[5,5],[-5,5],[-5,-5],[5,-5]])
@@ -41,7 +41,7 @@ def main():
     nr_samples = np.size(data,0)
     
     #1) ML estimation of model parameters 
-    params = parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref)
+    # params = parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref)
     
     #2) Position estimation using least squares
     position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, True)
@@ -51,7 +51,7 @@ def main():
 
         #3) Postion estimation using numerical maximum likelihood
         #TODO
-        position_estimation_numerical_ml(data,nr_anchors,p_anchor, params, p_true)
+        # position_estimation_numerical_ml(data,nr_anchors,p_anchor, params, p_true)
     
         #4) Position estimation with prior knowledge (we roughly know where to expect the agent)
         #TODO
@@ -79,11 +79,17 @@ def parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref):
         ref = ref - true_distance
         D, _ = stats.kstest(ref, "expon")
 
+        # print("The "+str(i+1)+"th anchor "+ str(D))
         #(2) estimate the according parameter based
+        # print("-------------------------------------------------------")
         if D < 0.1 : #exponential distribution
             params[0][i] = 1/np.mean(np.mean(ref))
+            # print("The "+str(i+1)+"th anchor follows the Exponential model.")
+            # print("The parameter lambda is "+str(params[0][i]))
         else: # gaussian distribution
             params[0][i] = math.pow(np.var(ref),2)
+            # print("The "+str(i+1)+"th anchor follows the Gaussian model.")
+            # print("The parameter sigma square is "+str(params[0][i]))
     
     return params
 #--------------------------------------------------------------------------------
@@ -96,6 +102,7 @@ def position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, use_expo
         p_true... true position (needed to calculate error) 2x2 
         use_exponential... determines if the exponential anchor in scenario 2 is used, bool"""
     nr_samples = np.size(data,0)
+
     tol = 0.000005  # tolerance
     max_iter = 10  # maximum iterations for GN
     
@@ -118,25 +125,26 @@ def position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, use_expo
     per_mean = np.mean(p_error, axis =0)
     per_variance = np.var(p_error, axis =0)
 
-    print("-----point error-------")
-    print(per_mean)
-    print(per_variance)
-
+    print('--------------------------------------------------------------------------------')
+    print("The mean of the position estimation error is " + str(per_mean))
+    print("The variance of the position estimation error is " + str(per_variance))
+    print('--------------------------------------------------------------------------------')
+    
     p_mean = np.mean(p_expected, axis = 0)
     p_cov = np.cov(p_expected[:,0],p_expected[:,1])
     pT_expected = np.transpose(p_expected)
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.plot(pT_expected[0], pT_expected[1], 'ro', ms=1)
 
-    plt.plot(pT_expected[0], pT_expected[1], 'ro')
-    plt.show()
-
-    plot_gauss_contour(p_mean,p_cov,1,3,-5,-3,"Scatter plots of the estimated positions")
+    plot_gauss_contour(p_mean,p_cov,1,3,-6,-2,"Scatter plots of the estimated positions")
     
-    # Fx,x = ecdf(p_error) 
-    # plt.plot(x,Fx)
-    # plt.title('cumulative distribution function (CDF) of the position estimation error')
-    # plt.ylabel('F(x)')
-    # plt.xlabel('x')
-    # plt.show()
+    Fx,x = ecdf(p_error) 
+    plt.plot(x,Fx)
+    plt.title('cumulative distribution function (CDF) of the position estimation error')
+    plt.ylabel('F(x)')
+    plt.xlabel('x')
+    plt.show()
 
     pass
 #--------------------------------------------------------------------------------
@@ -172,15 +180,15 @@ def least_squares_GN(p_anchor,p_start, r, max_iter, tol):
         r... distance_estimate, nr_anchors x 1
         max_iter... maximum number of iterations, scalar
         tol... tolerance value to terminate, scalar"""
-    J = np.zeros([4,2])
-    b = np.zeros([4,1])
+    J = np.zeros([3,2])
+    b = np.zeros([3,1])
 
     for _ in range(0,max_iter):
-        for k in range(0,4):
-            p_start_p_anchor = dist.euclidean(p_start,p_anchor[k])
-            b[k] = r[k]-p_start_p_anchor
-            J[k][0] = -(p_start[0] - p_anchor[k][0])/p_start_p_anchor
-            J[k][1] = -(p_start[1] - p_anchor[k][1])/p_start_p_anchor
+        for k in range(0,3):
+            p_start_p_anchor = dist.euclidean(p_start,p_anchor[k+1])
+            b[k] = r[k+1]-p_start_p_anchor
+            J[k][0] = -(p_start[0] - p_anchor[k+1][0])/p_start_p_anchor
+            J[k][1] = -(p_start[1] - p_anchor[k+1][1])/p_start_p_anchor
         solution = np.linalg.lstsq(J, b)[0]
         p_next = p_start - solution
         if dist.euclidean(p_next,p_start) < tol :
@@ -188,6 +196,22 @@ def least_squares_GN(p_anchor,p_start, r, max_iter, tol):
         else :
             p_start = p_next
     return np.ndarray.flatten(p_start)
+    # J = np.zeros([4,2])
+    # b = np.zeros([4,1])
+
+    # for _ in range(0,max_iter):
+    #     for k in range(0,4):
+    #         p_start_p_anchor = dist.euclidean(p_start,p_anchor[k])
+    #         b[k] = r[k]-p_start_p_anchor
+    #         J[k][0] = -(p_start[0] - p_anchor[k][0])/p_start_p_anchor
+    #         J[k][1] = -(p_start[1] - p_anchor[k][1])/p_start_p_anchor
+    #     solution = np.linalg.lstsq(J, b)[0]
+    #     p_next = p_start - solution
+    #     if dist.euclidean(p_next,p_start) < tol :
+    #         break
+    #     else :
+    #         p_start = p_next
+    # return np.ndarray.flatten(p_start)
     
 #--------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------
