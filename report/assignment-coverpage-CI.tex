@@ -67,7 +67,7 @@ To find the $\lambda$, which maximizes the likelihood function, we should differ
 \end{equation}
 
 \noindent
-Finally, we get the parameter $\lambda$.
+Finally, we get the parameter $\lambda$ (solution).
 \begin{equation}
 \lambda = \frac{N_A}{\signa(\ridi)} = \frac{1}{\overline{\ridi}} = \frac{1}{\mu}
 \end{equation}
@@ -89,7 +89,7 @@ Finally, we get the parameter $\lambda$.
 	\end{center}
 \end{figure}
 
-\subsubsection{Measurements of all anchors follow the Exponential model.}
+\subsubsection{Scenario 3: Measurements of all anchors follow the Exponential model.}
 \begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.5\textwidth]{scenario3param.jpg}
@@ -99,7 +99,27 @@ Finally, we get the parameter $\lambda$.
 
 \section{Estimation of the Position}
 \subsection{Least-Squares Estimation of the Position}
-\subsubsection{Show analytically that the least-squares estimator of the position is equivalent to the maximum likelihood estimator}
+\subsubsection{Show analytically that the least-squares estimator of the position is equivalent to the maximum likelihood estimator for Gaussian distribution model}
+
+\noindent
+The maximum likelihood estimatior for guassian distribution model is like this.
+\newcommand{\maxp}{\arg\max\limits_{p}}
+\newcommand{\minp}{\arg\min\limits_{p}}
+\begin{equation}
+\hat{p}_{ML} = \arg\max\limits_{p}p(r|p) = \maxp\mulna\prip =\maxp (\frac{1}{\sqrt{2\pi\sigma^2}})^{N_A}\exp^{-\frac{1}{2\sigma^2}\signa(\ridi)^2} \\
+\end{equation}
+
+\noindent
+Maximizing the function (6) is the same as minizing the negative of its logarithm. Therfore, the equation(6) is equivalent to the equation (7).
+\begin{equation}
+\minp(-\ln((\frac{1}{\sqrt{2\pi\sigma^2}})^{N_A}\exp^{-\frac{1}{2\sigma^2}\signa(\ridi)^2})) = \minp(N_A\ln\sqrt{2\pi\sigma^2}+\frac{1}{2\sigma^2}\signa(\ridi)^2)
+\end{equation}
+Since $N_A$ and $\sigma$ are constant, the equation(7) can be simplified to equation (8).
+\begin{equation}
+\minp\signa(\ridi)^2 = \minp ||r-d(p)||^2
+\end{equation}
+Then, the equation(8) is the least square estimator of the position.\\ That is, we proved that the least square estimator of the position is equivalent to the maximum likelihood estimator for Gaussian distribution model.
+
 \subsubsection{Implement the Gauss-Newton algorithm}
 
 First, we just set the tolerance as 0.000005 and the max\_iteration as 10.\\
@@ -113,7 +133,7 @@ Then, we iterate with new start point(selected within the anchors square with un
 The following figure is the main code of Gauss\_Newton.\\
 \begin{figure}[h]
 	\begin{center}
-		\includegraphics[width=0.5\textwidth]{least_square.jpg}
+		\includegraphics[width=0.4\textwidth]{least_square.jpg}
 		\caption{Least\_square with Gauss\_Newton}
 	\end{center}
 \end{figure}
