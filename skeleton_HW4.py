@@ -5,6 +5,8 @@
 import math
 import scipy.spatial.distance as dist
 import numpy as np
+from numpy import unravel_index
+import pylab
 import matplotlib.cm as cm
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
@@ -53,13 +55,11 @@ def main():
         x = np.arange(-5, 5, .05)
         y = np.arange(-5, 5, .05)
         xx, yy = np.meshgrid(x, y)
+        # construct a mesh for each anchor of the distance from the anchor -- to be used in determining likelihoods
         distances = [np.sqrt((anchor[0] - xx)**2 + (anchor[1] - yy)**2) for anchor in p_anchor]
-
         likelihoods = [np.where(data[0][i] > distances[i], params[0][i] * np.exp(-params[0][i] * (data[0][i] - distances[i])), 0) for i in range(nr_anchors)]
-        #for mesh in likelihoods:
-        #    plt.contour(x, y, mesh)
-        #    plt.show()
 
+        # multiply the likelihood mesh from each anchor together to obtain the joint likelihood
         joint_likelihood = functools.reduce(np.multiply, likelihoods)
         plt.contour(x, y, joint_likelihood)
         plt.show()
@@ -166,7 +166,33 @@ def position_estimation_numerical_ml(data,nr_anchors,p_anchor, lambdas, p_true):
         p_anchor... position of anchors, nr_anchors x 2 
         lambdas... estimated parameters (scenario 3), nr_anchors x 1
         p_true... true position (needed to calculate error), 2x2 """
-    pass
+
+    x = np.arange(-5, 5, .05)
+    y = np.arange(-5, 5, .05)
+    xx, yy = np.meshgrid(x, y)
+    # construct a mesh for each anchor of the distance from the anchor -- to be used in determining likelihoods
+    distances = [np.sqrt((anchor[0] - xx) ** 2 + (anchor[1] - yy) ** 2) for anchor in p_anchor]
+
+    position_estimations = []
+    for d in data:
+        likelihoods = [
+            np.where(d[i] > distances[i], lambdas[0][i] * np.exp(-lambdas[0][i] * (d[i] - distances[i])), 0) for i
+            in range(nr_anchors)]
+
+        # multiply the likelihood mesh from each anchor together to obtain the joint likelihood
+        joint_likelihood = functools.reduce(np.multiply, likelihoods)
+
+        ml_index = unravel_index(joint_likelihood.argmax(), joint_likelihood.shape)
+        p = (x[ml_index[1]], y[ml_index[0]])
+        position_estimations.append(p)
+
+    p_est_x = [p[0] for p in position_estimations]
+    p_est_y = [p[1] for p in position_estimations]
+    plt.plot(p_est_x, p_est_y, 'bo')
+    pylab.xlim([-5, 5])
+    pylab.ylim([-5, 5])
+    plt.show()
+
 
 #--------------------------------------------------------------------------------
 def position_estimation_bayes(data,nr_anchors,p_anchor,prior_mean,prior_cov,lambdas, p_true):
