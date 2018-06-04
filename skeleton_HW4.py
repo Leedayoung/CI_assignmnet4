@@ -64,6 +64,9 @@ def main():
         # multiply the likelihood mesh from each anchor together to obtain the joint likelihood
         joint_likelihood = functools.reduce(np.multiply, likelihoods)
         plt.contour(x, y, joint_likelihood)
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('Joint Likelihood Distribution of the First Data Point')
         plt.show()
 
         #likeleyhoods = [params[0][i] * np.exp(-params[0][i] * (data[0][i] - ))]
@@ -206,6 +209,9 @@ def position_estimation_numerical_ml(data,nr_anchors,p_anchor, lambdas, p_true):
     p_est_x = [p[0] for p in position_estimations]
     p_est_y = [p[1] for p in position_estimations]
     plt.plot(p_est_x, p_est_y, 'bo')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title('Numerical ML Estimation of the Target Point (2, -4)')
     pylab.xlim([-5, 5])
     pylab.ylim([-5, 5])
     plt.show()
@@ -249,6 +255,9 @@ def position_estimation_bayes(data,nr_anchors,p_anchor,prior_mean,prior_cov,lamb
     p_est_x = [p[0] for p in position_estimations]
     p_est_y = [p[1] for p in position_estimations]
     plt.plot(p_est_x, p_est_y, 'bo')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title('Bayesian Estimation of the Target Point (2, -4)')
     pylab.xlim([-5, 5])
     pylab.ylim([-5, 5])
     plt.show()
