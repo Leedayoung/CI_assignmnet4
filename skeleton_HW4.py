@@ -21,8 +21,8 @@ def main():
     
     # choose the scenario
     # scenario = 1    # all anchors are Gaussian
-    scenario = 2    # 1 anchor is exponential, 3 are Gaussian
-    # scenario = 3    # all anchors are exponential
+    # scenario = 2    # 1 anchor is exponential, 3 are Gaussian
+    scenario = 3    # all anchors are exponential
     
     # specify position of anchors
     p_anchor = np.array([[5,5],[-5,5],[-5,-5],[5,-5]])
@@ -44,7 +44,7 @@ def main():
     nr_samples = np.size(data,0)
     
     #1) ML estimation of model parameters 
-    # params = parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref)
+    params = parameter_estimation(reference_measurement,nr_anchors,p_anchor,p_ref)
     
     #2) Position estimation using least squares
     position_estimation_least_squares(data,nr_anchors,p_anchor, p_true, False)
@@ -57,7 +57,9 @@ def main():
         xx, yy = np.meshgrid(x, y)
         # construct a mesh for each anchor of the distance from the anchor -- to be used in determining likelihoods
         distances = [np.sqrt((anchor[0] - xx)**2 + (anchor[1] - yy)**2) for anchor in p_anchor]
-        likelihoods = [np.where(data[0][i] > distances[i], params[0][i] * np.exp(-params[0][i] * (data[0][i] - distances[i])), 0) for i in range(nr_anchors)]
+        likelihoods = [
+            np.where(data[0][i] > distances[i], params[0][i] * np.exp(-1 * params[0][i] * (data[0][i] - distances[i])), 0)
+            for i in range(nr_anchors)]
 
         # multiply the likelihood mesh from each anchor together to obtain the joint likelihood
         joint_likelihood = functools.reduce(np.multiply, likelihoods)
@@ -68,7 +70,7 @@ def main():
 
         #3) Postion estimation using numerical maximum likelihood
         #TODO
-        # position_estimation_numerical_ml(data,nr_anchors,p_anchor, params, p_true)
+        position_estimation_numerical_ml(data,nr_anchors,p_anchor, params, p_true)
     
         #4) Position estimation with prior knowledge (we roughly know where to expect the agent)
         #TODO
@@ -220,8 +222,39 @@ def position_estimation_bayes(data,nr_anchors,p_anchor,prior_mean,prior_cov,lamb
          prior_cov... covariance of the prior-dist, 2x2
          lambdas... estimated parameters (scenario 3), nr_anchors x 1
          p_true... true position (needed to calculate error), 2x2 """
-    # TODO
-    pass
+
+    x = np.arange(-5, 5, .05)
+    y = np.arange(-5, 5, .05)
+    xx, yy = np.meshgrid(x, y)
+    # construct a mesh for each anchor of the distance from the anchor -- to be used in determining likelihoods
+    distances = [np.sqrt((anchor[0] - xx) ** 2 + (anchor[1] - yy) ** 2) for anchor in p_anchor]
+    # construct a mesh of the gaussian pdf for the point p
+    prior_pdf = mlab.bivariate_normal(xx, yy, np.sqrt(prior_cov[0][0]), np.sqrt(prior_cov[1][1]), prior_mean[0][0], prior_mean[0][1], prior_cov[0][1])
+
+    position_estimations = []
+    for d in data:
+        likelihoods = [
+            np.where(d[i] > distances[i], lambdas[0][i] * np.exp(-lambdas[0][i] * (d[i] - distances[i])), 0) for i
+            in range(nr_anchors)]
+
+        # multiply the likelihood mesh from each anchor together to obtain the joint likelihood
+        joint_likelihood = functools.reduce(np.multiply, likelihoods)
+        # bayesian_likelihood is p(r|p) * p(p)
+        bayesian_likelihood = joint_likelihood * prior_pdf
+
+        ml_index = unravel_index(bayesian_likelihood.argmax(), bayesian_likelihood.shape)
+        p = (x[ml_index[1]], y[ml_index[0]])
+        position_estimations.append(p)
+
+    p_est_x = [p[0] for p in position_estimations]
+    p_est_y = [p[1] for p in position_estimations]
+    plt.plot(p_est_x, p_est_y, 'bo')
+    pylab.xlim([-5, 5])
+    pylab.ylim([-5, 5])
+    plt.show()
+
+
+
 #--------------------------------------------------------------------------------
 def least_squares_GN(p_anchor,p_start, r, max_iter, tol):
     """ apply Gauss Newton to find the least squares solution
