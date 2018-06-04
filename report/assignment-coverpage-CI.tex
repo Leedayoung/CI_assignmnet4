@@ -282,7 +282,7 @@ where $N$ is the number of anchors, and $d_i(\bm{p})$ is the euclidean distance 
 	\end{center}
 \end{figure}
 
-The maximum found here is not the true location of $\bm{p}$.  While it is possible, since $\bm{p}$ lies along the compute grid, the noisiness of the data makes finding the actual point very unlikely.  Nonetheless, the maximum 
+The maximum found here is not the true location of $\bm{p}$.  While it is possible, since $\bm{p}$ lies along the compute grid, the noisiness of the data makes finding the actual point very unlikely.
 
 The numerical approach is better suited than gradient ascent to the exponential distribution.  One key issue with gradient ascent is that it requires a non-zero gradient to be effective.  Since the exponential distribution is described as 0 where $r_i < d_i(\bm{p})$, large areas of the solution space have a gradient of 0.  If the gradient ascent algorithm were to start in one such region, it would become stuck and unable to converge.  The peicewise definition of the exponential distribution also means that it is not differentiable at all points, posing further difficulties.
 
@@ -299,19 +299,19 @@ The method in the previous section is then applied to each available measurement
 
 The numerical method does have drawbacks.  Compared to iterative models, it is very computationally intensive, resulting in much slower solutions.  This is because a numerical estimation must perform a computation on every point on a grid covering the solution space.  Searching a particularly large solution space quickly becomes too computationally expensive to have any real-world application.  The resolution of the computation grid can be decreased to reduce the required number of computations, but this in turn will produce less accurate results.
 
-Nonetheless, this is a fair comparison since both approaches produce a Maximum Likelihood estimates, albeit with strikingly dissimilar methods.  In this sense the numerical approach is a true Maximum Likelihood Estimator.
+Nonetheless, the comparison between numerical and gradient ascent methods is fair since both approaches produce a Maximum Likelihood estimates, albeit by strikingly dissimilar means.  In this sense the numerical approach is a true Maximum Likelihood Estimator.
 
-To improve accuracy, it may be tempting to consider not just one measurement, but all available measurements.  Theoretically, one could take the product of all joint distributions, one for each measurement, to produce a much more accurate estimate.  A potential issue with this is that joint distributions typically hold small values; taking the product of 2000 such functions may produce numbers too small to be efficiently handled by computers.  Additionally, in real-world applications it is unlikely that a large volume of relevant measurements would be available at a given instant.
+To improve accuracy, it may be tempting to consider not just one measurement, but all available measurements.  Theoretically, one could take the product of all joint distributions, one for each measurement, to produce a much more accurate estimate.  A potential issue with this is that joint distributions typically hold small values; taking the product of hundreds or even thousands of such functions may produce numbers too small to be efficiently handled by computers.  Additionally, in real-world applications it is unlikely that a large volume of relevant measurements would be available at a given instant.
 
 \subsubsection*{Part 3}
 
 Another method, referred to here as the 'Bayesian Method' involves including prior knowledge about the point being estimated to increase accuracy.  It follows the formula
 
 \[
-\hat{p}_Bayes = \argmax _p p(\bm{r}|\bm{p}) p(\bm{p}) , 
+\hat{p}_{Bayes} = \argmax _p p(\bm{r}|\bm{p}) p(\bm{p}) , 
 \]
 
-where $p(\bm{p})$ is a Gaussian distribution centered on $\bm{p}$ with covariance matrix $\sigma$ = diag{$\sigma ^2$} and $\sigma = 1$.
+where $p(\bm{p})$ is a Gaussian distribution centered on $\bm{p}$ with covariance matrix $\sigma$ = diag\{$\sigma ^2$\} and $\sigma = 1$.
 
 \begin{figure}[h]
 	\begin{center}
@@ -320,6 +320,6 @@ where $p(\bm{p})$ is a Gaussian distribution centered on $\bm{p}$ with covarianc
 	\end{center}
 \end{figure}
 
-It should be noted that while this approach looks promising, it relies on the prior knowledge of the point we are trying to estimate.
+It should be noted that while this approach looks promising, it relies on the prior knowledge of the point we are trying to estimate, and therefore cannot be relied upon.  Despite this drawback, it does demonstrate that having some foreknowledge about the position of our agent can be paired with anchor measurements to considerably improve position estimates.
 
 \end{document}

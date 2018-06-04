@@ -72,11 +72,9 @@ def main():
         #likeleyhoods = [params[0][i] * np.exp(-params[0][i] * (data[0][i] - ))]
 
         #3) Postion estimation using numerical maximum likelihood
-        #TODO
         position_estimation_numerical_ml(data,nr_anchors,p_anchor, params, p_true)
     
         #4) Position estimation with prior knowledge (we roughly know where to expect the agent)
-        #TODO
         # specify the prior distribution
         prior_mean = p_true
         prior_cov = np.eye(2)
